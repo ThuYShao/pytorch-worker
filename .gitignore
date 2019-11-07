@@ -11,3 +11,4 @@ config/default_local.config
 temp
 notebook
 result
+output/

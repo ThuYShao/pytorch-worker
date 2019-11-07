@@ -2,14 +2,12 @@ import logging
 
 from .Basic import BasicFormatter
 from .nlp.BasicBertFormatter import BasicBertFormatter
-# from .cv.BasicResnetFormatter import BasicResnetFormatter
 
 logger = logging.getLogger(__name__)
 
 formatter_list = {
     "Basic": BasicFormatter,
     "BasicBert": BasicBertFormatter
-    # "BasicResnet": BasicResnetFormatter
 }
 
 
