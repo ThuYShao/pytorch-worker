@@ -2,12 +2,14 @@ import logging
 
 from .Basic import BasicFormatter
 from .nlp.BasicBertFormatter import BasicBertFormatter
+from .nlp.BertPairTextFormatter import BertPairTextFormatter
 
 logger = logging.getLogger(__name__)
 
 formatter_list = {
     "Basic": BasicFormatter,
-    "BasicBert": BasicBertFormatter
+    "BasicBert": BasicBertFormatter,
+    "BertPairText": BertPairTextFormatter
 }
 
 

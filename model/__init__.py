@@ -1,7 +1,9 @@
 from .nlp.BasicBert import BasicBert
+from .nlp.BertPoint import BertPoint
 
 model_list = {
-    "BasicBert": BasicBert
+    "BasicBert": BasicBert,
+    "BertPoint": BertPoint
 }
 
 
