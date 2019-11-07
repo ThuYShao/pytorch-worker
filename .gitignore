@@ -4,6 +4,7 @@
 .idea
 __pycache__
 *un~
+*.DS_Store
 
 config/default_local.config
 
