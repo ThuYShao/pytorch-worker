@@ -1,9 +1,9 @@
 from .nlp.JsonFromFiles import JsonFromFilesDataset
 from .others.FilenameOnly import FilenameOnlyDataset
-from .cv.ImageFromJson import ImageFromJsonDataset
+#from .cv.ImageFromJson import ImageFromJsonDataset
 
 dataset_list = {
-    "ImageFromJson": ImageFromJsonDataset,
+    #"ImageFromJson": ImageFromJsonDataset,
     "JsonFromFiles": JsonFromFilesDataset,
     "FilenameOnly": FilenameOnlyDataset
 }
