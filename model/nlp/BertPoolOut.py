@@ -17,10 +17,11 @@ class BertPoolOut(nn.Module):
 
     def forward(self, data, config, gpu_list, acc_result, mode):
         input_ids, attention_mask, token_type_ids = data['input_ids'], data['attention_mask'], data['token_type_ids']
-        _, y = self.bert(input_ids, token_type_ids=token_type_ids, attention_mask=attention_mask,
-                         output_all_encoded_layers=False)
+        with torch.no_grad():
+            _, y = self.bert(input_ids, token_type_ids=token_type_ids, attention_mask=attention_mask,
+                             output_all_encoded_layers=False)
+            y = y.view(y.size()[0], -1)
 
-        y = y.view(y.size()[0], -1)
 
         output = {
             'guid': data['guid'],
