@@ -46,10 +46,10 @@ class BertPairTextFormatter(BasicFormatter):
             labels = torch.LongTensor(labels)
 
         if mode != 'test':
-            return {'input_ids': input_ids, 'attention_mask': attention_mask, 'token_type_ids': token_type_ids,
+            return {'guid': guids, 'input_ids': input_ids, 'attention_mask': attention_mask, 'token_type_ids': token_type_ids,
                     'label': labels}
         else:
-            return {'input_ids': input_ids, 'attention_mask': attention_mask, 'token_type_ids': token_type_ids}
+            return {'guid': guids, 'input_ids': input_ids, 'attention_mask': attention_mask, 'token_type_ids': token_type_ids}
 
 
 
