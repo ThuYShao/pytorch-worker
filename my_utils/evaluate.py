@@ -33,11 +33,12 @@ def evaluate_label(_res_dict, _label_dict):
     predict = 0
     for qid in _label_dict:
         label += len(_label_dict[qid])
-    for guid in _label_dict:
+    for guid in _res_dict:
         qid, cid = guid.split('_')
-        if qid in _label_dict and cid in _label_dict[qid]:
-            correct += 1
-        predict += 1
+        if _res_dict[guid] == 1:
+            predict += 1
+            if cid in _label_dict[qid]:
+                correct += 1
     print('#correct=%d, #label=%d, #predict=%d' % (correct, label, predict))
 
     precision = float(correct) / predict
@@ -52,7 +53,7 @@ def evaluate_label(_res_dict, _label_dict):
 
 if __name__ == '__main__':
     label_file = os.path.join(BASE_DIR, 'test_labels.json')
-    res_file = './result/task2_point_test.json'
+    res_file = '../result/task2_point_test.json'
     label_dict = load_label(label_file)
     res_dict = load_result(res_file)
     evaluate_label(res_dict, label_dict)
