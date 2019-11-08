@@ -4,7 +4,7 @@ __author__ = 'yshao'
 import json
 import os
 
-BASE_DIR = '/data/disk2/private/guozhipeng/syq/coliee/Task2'
+BASE_DIR = '/data/disk2/private/guozhipeng/syq/coliee/Task2/processed'
 
 if __name__ == '__main__':
     # merge file
