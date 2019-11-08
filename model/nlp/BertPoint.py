@@ -33,7 +33,7 @@ class BertPoint(nn.Module):
                             output_all_encoded_layers=False)
         y = y.view(y.size()[0], -1)
 
-        if mode == 'test' and config.getboolean('test', 'pool_out'):
+        if mode == 'test' and config.getboolean('output', 'pool_out'):
             output = []
             y = y.cpu().detach().numpy().tolist()
             for i, guid in enumerate(data['guid']):
