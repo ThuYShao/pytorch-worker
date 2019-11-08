@@ -48,7 +48,7 @@ if __name__ == "__main__":
 
     parameters = init_all(config, gpu_list, args.checkpoint, "test")
 
-    if config.getboolen('output', 'save_as_dict'):
+    if config.getboolean('output', 'save_as_dict'):
         out_file = open(args.result, 'w', encoding='utf-8')
         outputs = test(parameters, config, gpu_list)
         for output in outputs:
