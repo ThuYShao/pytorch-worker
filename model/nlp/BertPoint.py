@@ -41,5 +41,5 @@ class BertPoint(nn.Module):
             acc_result = self.accuracy_function(y, label, config, acc_result)
             return {"loss": loss, "acc_result": acc_result}
 
-        return {}
+        return {"output": y.detach().cpu().numpy().tolist()}
     
