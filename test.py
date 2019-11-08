@@ -48,5 +48,16 @@ if __name__ == "__main__":
 
     parameters = init_all(config, gpu_list, args.checkpoint, "test")
 
-    json.dump(test(parameters, config, gpu_list), open(args.result, "w", encoding="utf8"), ensure_ascii=False,
-              sort_keys=True, indent=2)
+    if config.getboolen('output', 'save_as_dict'):
+        out_file = open(args.result, 'w', encoding='utf-8')
+        outputs = test(parameters, config, gpu_list)
+        for output in outputs:
+            tmp_dict = {
+                'id_': output[0],
+                'res': output[1]
+            }
+            out_line = json.dumps(tmp_dict, ensure_ascii=False) + '\n'
+            out_file.write(out_line)
+    else:
+        json.dump(test(parameters, config, gpu_list), open(args.result, "w", encoding="utf8"), ensure_ascii=False,
+                  sort_keys=True, indent=2)
