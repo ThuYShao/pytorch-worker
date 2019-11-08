@@ -30,7 +30,6 @@ class BertPairTextFormatter(BasicFormatter):
         for temp in data:
             res_dict = example_item_to_feature(temp, self.max_len, self.tokenizer, self.output_mode,
                                                cls_token_at_end=False, pad_on_left=False,
-                                               cls_token=self.tokenizer.cls_token, sep_token=self.tokenizer.sep_token,
                                                cls_token_segment_id=0, pad_token_segment_id=0)
             input_ids.append(res_dict['input_ids'])
             attention_mask.append(res_dict['input_mask'])
