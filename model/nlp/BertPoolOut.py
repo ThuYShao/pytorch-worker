@@ -22,10 +22,8 @@ class BertPoolOut(nn.Module):
                              output_all_encoded_layers=False)
             y = y.view(y.size()[0], -1)
 
-
-        output = {
-            'guid': data['guid'],
-            'pooled_out': y.detach().cpu().numpy().tolist()
-        }
-
-        return {'output': output}
+            output = []
+            y = y.cpu().detach().numpy().tolist()
+            for i, guid in enumerate(data['guid']):
+                output.append([guid, y[i]])
+            return {"output": output}
