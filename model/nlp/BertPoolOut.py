@@ -22,4 +22,9 @@ class BertPoolOut(nn.Module):
 
         y = y.view(y.size()[0], -1)
 
-        return {}
+        output = {
+            'guid': data['guid'],
+            'pooled_out': y.detach().cpu().numpy().tolist()
+        }
+
+        return {'output': output}

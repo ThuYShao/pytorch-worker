@@ -35,16 +35,11 @@ class BertPoint(nn.Module):
         y = self.fc(y)
         y = y.view(y.size()[0], -1)
 
-        output_dict = {
-            'guid': data['guid'],
-            'score': y.detach().cpu().numpy().tolist()
-        }
-
         if "label" in data.keys():
             label = data["label"]
             loss = self.criterion(y, label.view(-1))
             acc_result = self.accuracy_function(y, label, config, acc_result)
             return {"loss": loss, "acc_result": acc_result}
 
-        return {"output": output_dict}
+        return {"output": [data['guid'], y.cpu().numpy().tolist()]}
     
