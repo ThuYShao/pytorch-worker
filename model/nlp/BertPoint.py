@@ -44,7 +44,7 @@ class BertPoint(nn.Module):
         else:
             output = []
             y = y.cpu().detach().numpy().tolist()
-            for i, guid in data['guid']:
+            for i, guid in enumerate(data['guid']):
                 output.append([guid, y[i]])
             return {"output": output}
     
