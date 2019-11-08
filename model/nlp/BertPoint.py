@@ -32,6 +32,14 @@ class BertPoint(nn.Module):
         _, y = self.bert(input_ids, token_type_ids=token_type_ids, attention_mask=attention_mask,
                             output_all_encoded_layers=False)
         y = y.view(y.size()[0], -1)
+
+        if mode == 'test' and config.getboolean('test', 'pool_out'):
+            output = []
+            y = y.cpu().detach().numpy().tolist()
+            for i, guid in enumerate(data['guid']):
+                output.append([guid, y[i]])
+            return {"output": output}
+
         y = self.fc(y)
         y = y.view(y.size()[0], -1)
 
