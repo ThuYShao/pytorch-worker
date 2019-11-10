@@ -1,10 +1,12 @@
 import logging
 import torch
+import os
 
 from reader.reader import init_dataset, init_formatter, init_test_dataset
 from model import get_model
 from model.optimizer import init_optimizer
 from .output_init import init_output_function
+from .poolout_tool import load_state_keywise
 
 logger = logging.getLogger(__name__)
 
@@ -12,7 +14,7 @@ logger = logging.getLogger(__name__)
 def init_all(config, gpu_list, checkpoint, mode, *args, **params):
     result = {}
 
-    logger.info("Begin to initialize dataset and formatter...")
+    logger.info("Begin to initialize dataset and formatter..., mode=%s", mode)
     if mode == "train":
         init_formatter(config, ["train", "valid"], *args, **params)
         result["train_dataset"], result["valid_dataset"] = init_dataset(config, *args, **params)
@@ -37,7 +39,11 @@ def init_all(config, gpu_list, checkpoint, mode, *args, **params):
 
     try:
         parameters = torch.load(checkpoint)
-        model.load_state_dict(parameters["model"])
+        if mode == 'poolout':
+            model = load_state_keywise(model, parameters["model"])
+
+        else:
+            model.load_state_dict(parameters["model"])
 
         if mode == "train":
             trained_epoch = parameters["trained_epoch"]
