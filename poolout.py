@@ -22,7 +22,9 @@ if __name__ == "__main__":
     parser.add_argument('--config', '-c', help="specific config file", required=True)
     parser.add_argument('--gpu', '-g', help="gpu id list")
     parser.add_argument('--checkpoint', help="checkpoint file path")
+    parser.add_argument('--result', help="result file path", required=True)
     args = parser.parse_args()
+
 
     configFilePath = args.config
 

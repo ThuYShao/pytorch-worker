@@ -14,12 +14,19 @@ logger = logging.getLogger(__name__)
 
 
 def load_state_keywise(model, pretrained_dict):
+    logger.info("load state keywise start ...")
     model_dict = model.state_dict()
+    # print(model_dict.keys())
+    # input("continue?")
     tmp_cnt = 0
     for k, v in pretrained_dict.items():
-        kk = k.replace("module.", "")
-        if kk in model_dict and v.size() == model_dict[kk].size():
-            model_dict[kk] = v
+        # kk = k.replace("module.", "")
+        # print('k=', k)
+        # input("continue?")
+        # print('kk=', kk)
+        # input("continue?")
+        if k in model_dict and v.size() == model_dict[k].size():
+            model_dict[k] = v
             tmp_cnt += 1
         else:
             continue
