@@ -22,6 +22,7 @@ class BertPoolOutMax(nn.Module):
 
     def forward(self, data, config, gpu_list, acc_result, mode):
         input_ids, attention_mask, token_type_ids = data['input_ids'], data['attention_mask'], data['token_type_ids']
+        print(input_ids.size(), attention_mask.size(), token_type_ids.size())
         # batch_size = input_ids.size()[0]
         with torch.no_grad():
             # input_ids = input_ids.view(-1, self.max_len)
@@ -33,23 +34,24 @@ class BertPoolOutMax(nn.Module):
                 for i in range(self.max_para_q):
                     lst = []
                     for j in range(self.max_para_c):
-                        _, y = self.bert(input_ids[k][i][j], token_type_ids=token_type_ids[k][i][j],
-                                         attention_mask=attention_mask[k][i][j])
+                        _, y = self.bert(input_ids[k, i, j].unsqueeze(0), token_type_ids=token_type_ids[k, i, j].unsqueeze(0),
+                                         attention_mask=attention_mask[k, i, j].unsqueeze(0))
                         y = y.view(1, -1)
                         lst.append(y)
                     lst = torch.cat(lst, dim=0)
-                    print('after concat', lst.size())
+                    # print('after concat', lst.size())
                     lst = lst.transpose(0, 1)
-                    print('after transpose', lst.size())
+                    # print('after transpose', lst.size())
                     lst = lst.unsqueeze(0)
-                    print('after unsqueeze', lst.size())
+                    # print('after unsqueeze', lst.size())
                     max_out = self.maxpool(lst)
                     max_out = max_out.squeeze()
-                    print('max out size', max_out.size())
-                    q_lst.append(max_out.detach().numpy().tolist())
+                    # print('max out size', max_out.size())
+                    q_lst.append(max_out.detach().cpu().tolist())
+                    # input('continue?')
                 print(len(q_lst))
-            input('continue to print content of q_list?')
-            print(q_lst)
+            # input('continue to print content of q_list?')
+            # print(q_lst)
 
 
             # _, y = self.bert(input_ids, token_type_ids=token_type_ids, attention_mask=attention_mask,
