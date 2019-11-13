@@ -23,7 +23,7 @@ class BertPoolOut(nn.Module):
             y = y.view(y.size()[0], -1)
 
             output = []
-            y = y.cpu().detach().numpy().tolist()
+            y = y.cpu().tolist()
             for i, guid in enumerate(data['guid']):
                 output.append([guid, y[i]])
             return {"output": output}
