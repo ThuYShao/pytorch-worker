@@ -28,24 +28,26 @@ class BertPoolOutMax(nn.Module):
             output = []
             for k in range(input_ids.size()[0]):
                 q_lst = []
-                for i in range(self.max_para_q, step=2):
-                    _, lst = self.bert(input_ids[k, i:i+1].view(-1, self.max_len),
-                                       token_type_ids=token_type_ids[k, i:i+1].view(-1, self.max_len),
-                                       attention_mask=attention_mask[k, i:i+1].view(-1, self.max_len))
+                for i in range(0, self.max_para_q, 2):
+                    print(input_ids[k, i:i+2].view(-1, self.max_len).size())
+                    _, lst = self.bert(input_ids[k, i:i+2].view(-1, self.max_len),
+                                       token_type_ids=token_type_ids[k, i:i+2].view(-1, self.max_len),
+                                       attention_mask=attention_mask[k, i:i+2].view(-1, self.max_len))
                     print('before view', lst.size())
                     lst = lst.view(2, self.max_para_c, -1)
                     print('after view', lst.size())
                     lst = lst.permute(2, 0, 1)
-                    print('after permute', lst.size)
+                    print('after permute', lst.size())
                     # lst = lst.transpose(0, 1)
                     lst = lst.unsqueeze(0)
                     print('after unsquezze', lst.size())
                     max_out = self.maxpool(lst)
-                    print('after maxpool', lst.size())
+                    print('after maxpool', max_out.size())
                     max_out = max_out.squeeze()
-                    print('after squeeze', lst.size())
+                    print('after squeeze', max_out.size())
                     max_out = max_out.transpose(0, 1)
                     q_lst.extend(max_out.detach().cpu().tolist())
+                    input('continue?')
                 print(len(q_lst))
                 exit()
                 assert (len(q_lst) == self.max_para_q)
