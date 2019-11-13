@@ -15,7 +15,7 @@ class BertPoolOutMax(nn.Module):
         self.max_para_q = config.getint('model', 'max_para_q')
         self.max_len = config.getint("data", "max_seq_length")
         self.bert = BertModel.from_pretrained(config.get("model", "bert_path"))
-        self.maxpool = nn.MaxPool2d(kernel_size=(1, self.max_para_c))
+        self.maxpool = nn.MaxPool1d(kernel_size=self.max_para_c)
 
     def init_multi_gpu(self, device, config, *args, **params):
         self.bert = nn.DataParallel(self.bert, device_ids=device)
@@ -24,32 +24,52 @@ class BertPoolOutMax(nn.Module):
         input_ids, attention_mask, token_type_ids = data['input_ids'], data['attention_mask'], data['token_type_ids']
         # batch_size = input_ids.size()[0]
         with torch.no_grad():
-            input_ids = input_ids.view(-1, self.max_len)
-            attention_mask = attention_mask.view(-1, self.max_len)
-            token_type_ids = token_type_ids.view(-1, self.max_len)
+            # input_ids = input_ids.view(-1, self.max_len)
+            # attention_mask = attention_mask.view(-1, self.max_len)
+            # token_type_ids = token_type_ids.view(-1, self.max_len)
 
-            print('before bert', input_ids.size(), attention_mask.size(), token_type_ids.size())
+            for k in range(input_ids.size()[0]):
+                q_lst = []
+                for i in range(self.max_para_q):
+                    lst = []
+                    for j in range(self.max_para_c):
+                        _, y = self.bert(input_ids[k][i][j], token_type_ids=token_type_ids[k][i][j],
+                                         attention_mask=attention_mask[k][i][j])
+                        y = y.view(1, -1)
+                        lst.append(y)
+                    lst = torch.cat(lst, dim=0)
+                    print('after concat', lst.size())
+                    lst = lst.transpose(0, 1)
+                    print('after transpose', lst.size())
+                    lst = lst.unsqueeze(0)
+                    print('after unsqueeze', lst.size())
+                    max_out = self.maxpool(lst)
+                    max_out = max_out.squeeze()
+                    print('max out size', max_out.size())
+                    q_lst.append(max_out.detach().numpy().tolist())
+                print(len(q_lst))
+            input('continue to print content of q_list?')
+            print(q_lst)
 
-            input('continue?')
 
-            _, y = self.bert(input_ids, token_type_ids=token_type_ids, attention_mask=attention_mask,
-                             output_all_encoded_layers=False)
+            # _, y = self.bert(input_ids, token_type_ids=token_type_ids, attention_mask=attention_mask,
+            #                  output_all_encoded_layers=False)
+            #
+            # y = y.view(-1, self.max_para_q, self.max_para_c, 768)
+            #
+            # y = y.permute(0, 3, 1, 2)
+            #
+            # y = self.maxpool(y)
+            #
+            # y = y.view(-1, 768, self.max_para_q, 1)
+            #
+            # y = y.squeeze(3)
+            #
+            # y = y.permute(0, 2, 1)
 
-            y = y.view(-1, self.max_para_q, self.max_para_c, 768)
-
-            y = y.permute(0, 3, 1, 2)
-
-            y = self.maxpool(y)
-
-            y = y.view(-1, 768, self.max_para_q, 1)
-
-            y = y.squeeze(3)
-
-            y = y.permute(0, 2, 1)
-
-            output = []
-            y = y.cpu().detach().numpy().tolist()
-            for i, guid in enumerate(data['guid']):
-                output.append([guid, y[i]])
-            return {"output": output}
+            # output = []
+            # y = y.cpu().detach().numpy().tolist()
+            # for i, guid in enumerate(data['guid']):
+            #     output.append([guid, y[i]])
+            # return {"output": output}
         
