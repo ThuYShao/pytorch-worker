@@ -72,10 +72,10 @@ class BertDocParaFormatter(BasicFormatter):
                     input_ids_row = []
                     attention_mask_row = []
                     token_type_ids_row = []
-                    for j in range(self.max_para_q):
-                        input_ids_row.append([0] * self.max_para_q)
-                        attention_mask_row.append([0] * self.max_para_q)
-                        token_type_ids_row.append([0] * self.max_para_q)
+                    for j in range(self.max_para_c):
+                        input_ids_row.append([0] * self.max_len)
+                        attention_mask_row.append([0] * self.max_len)
+                        token_type_ids_row.append([0] * self.max_len)
                     input_ids_item.append(input_ids_row)
                     attention_mask_item.append(attention_mask_row)
                     token_type_ids_item.append(token_type_ids_row)

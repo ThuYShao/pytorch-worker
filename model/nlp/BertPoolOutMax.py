@@ -15,7 +15,8 @@ class BertPoolOutMax(nn.Module):
         self.max_para_q = config.getint('model', 'max_para_q')
         self.max_len = config.getint("data", "max_seq_length")
         self.bert = BertModel.from_pretrained(config.get("model", "bert_path"))
-        self.maxpool = nn.MaxPool1d(kernel_size=self.max_para_c)
+        # self.maxpool = nn.MaxPool1d(kernel_size=self.max_para_c)
+        self.maxpool = nn.MaxPool2d(kernel_size=(1, self.max_para_c))
 
     def init_multi_gpu(self, device, config, *args, **params):
         self.bert = nn.DataParallel(self.bert, device_ids=device)
@@ -27,16 +28,26 @@ class BertPoolOutMax(nn.Module):
             output = []
             for k in range(input_ids.size()[0]):
                 q_lst = []
-                for i in range(self.max_para_q):
-                    _, lst = self.bert(input_ids[k, i].view(-1, self.max_len),
-                                       token_type_ids=token_type_ids[k, i].view(-1, self.max_len),
-                                       attention_mask=attention_mask[k, i].view(-1, self.max_len))
-                    lst = lst.view(self.max_para_c, -1)
-                    lst = lst.transpose(0, 1)
+                for i in range(self.max_para_q, step=2):
+                    _, lst = self.bert(input_ids[k, i:i+1].view(-1, self.max_len),
+                                       token_type_ids=token_type_ids[k, i:i+1].view(-1, self.max_len),
+                                       attention_mask=attention_mask[k, i:i+1].view(-1, self.max_len))
+                    print('before view', lst.size())
+                    lst = lst.view(2, self.max_para_c, -1)
+                    print('after view', lst.size())
+                    lst = lst.permute(2, 0, 1)
+                    print('after permute', lst.size)
+                    # lst = lst.transpose(0, 1)
                     lst = lst.unsqueeze(0)
+                    print('after unsquezze', lst.size())
                     max_out = self.maxpool(lst)
+                    print('after maxpool', lst.size())
                     max_out = max_out.squeeze()
-                    q_lst.append(max_out.detach().cpu().tolist())
+                    print('after squeeze', lst.size())
+                    max_out = max_out.transpose(0, 1)
+                    q_lst.extend(max_out.detach().cpu().tolist())
+                print(len(q_lst))
+                exit()
                 assert (len(q_lst) == self.max_para_q)
                 output.append([data['guid'][k], q_lst])
             return {"output": output}
