@@ -13,6 +13,7 @@ class BertPoolOutMax(nn.Module):
         super(BertPoolOutMax, self).__init__()
         self.max_para_c = config.getint('model', 'max_para_c')
         self.max_para_q = config.getint('model', 'max_para_q')
+        self.step = config.getint('model', 'step')
         self.max_len = config.getint("data", "max_seq_length")
         self.bert = BertModel.from_pretrained(config.get("model", "bert_path"))
         # self.maxpool = nn.MaxPool1d(kernel_size=self.max_para_c)
@@ -28,13 +29,13 @@ class BertPoolOutMax(nn.Module):
             output = []
             for k in range(input_ids.size()[0]):
                 q_lst = []
-                for i in range(0, self.max_para_q, 2):
-                    print(input_ids[k, i:i+2].view(-1, self.max_len).size())
-                    _, lst = self.bert(input_ids[k, i:i+2].view(-1, self.max_len),
-                                       token_type_ids=token_type_ids[k, i:i+2].view(-1, self.max_len),
-                                       attention_mask=attention_mask[k, i:i+2].view(-1, self.max_len))
+                for i in range(0, self.max_para_q, self.step):
+                    # print(input_ids[k, i:i+self.step].view(-1, self.max_len).size())
+                    _, lst = self.bert(input_ids[k, i:i+self.step].view(-1, self.max_len),
+                                       token_type_ids=token_type_ids[k, i:i+self.step].view(-1, self.max_len),
+                                       attention_mask=attention_mask[k, i:i+self.step].view(-1, self.max_len))
                     print('before view', lst.size())
-                    lst = lst.view(2, self.max_para_c, -1)
+                    lst = lst.view(self.step, self.max_para_c, -1)
                     print('after view', lst.size())
                     lst = lst.permute(2, 0, 1)
                     print('after permute', lst.size())
@@ -46,7 +47,7 @@ class BertPoolOutMax(nn.Module):
                     max_out = max_out.squeeze()
                     print('after squeeze', max_out.size())
                     max_out = max_out.transpose(0, 1)
-                    q_lst.extend(max_out.detach().cpu().tolist())
+                    q_lst.extend(max_out.cpu().tolist())
                     input('continue?')
                 print(len(q_lst))
                 exit()
