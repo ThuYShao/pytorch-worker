@@ -95,8 +95,8 @@ class BertDocParaFormatter(BasicFormatter):
         attention_mask = torch.LongTensor(attention_mask)
         token_type_ids = torch.LongTensor(token_type_ids)
 
-        print('tensor size: ', input_ids.size(), attention_mask.size(), token_type_ids.size())
-        input('continue?')
+        # print('tensor size: ', input_ids.size(), attention_mask.size(), token_type_ids.size())
+        # input('continue?')
 
         if mode != 'test':
             labels = torch.LongTensor(labels)
