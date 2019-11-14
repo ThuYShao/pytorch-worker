@@ -11,16 +11,17 @@ WORK_DIR = '/data/disk2/private/guozhipeng/syq/coliee/pytorch-worker/'
 
 def choose_start_point(_org_name, _out_name, _start):
     out_file = open(_out_name, 'w', encoding='utf-8')
-    idx = 0
+    idx = -1
     with open(_org_name, encoding='utf-8') as fin:
         while True:
             json_str = fin.readline()
             if not json_str:
                 break
+            idx += 1
             if idx < _start:
                 continue
             out_file.write(json_str)
-            idx += 1
+            # idx += 1
     out_file.close()
     print('save in out_file=%s, #lines=%d' % (_out_name, idx))
 
