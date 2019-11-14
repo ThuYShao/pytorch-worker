@@ -74,7 +74,7 @@ def pool_out(parameters, config, gpu_list, _outname):
 
         if save_step > 0 and step % save_step == 0:
             out_file = open(_outname, 'w', encoding='utf-8')
-            for item in results:
+            for item in result:
                 tmp_dict = {
                     'id_': item[0],
                     'res': item[1]
