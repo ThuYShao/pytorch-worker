@@ -53,7 +53,7 @@ if __name__ == "__main__":
     parameters = init_all(config, gpu_list, args.checkpoint, "poolout")
 
     out_file = open(args.result, 'w', encoding='utf-8')
-    outputs = pool_out(parameters, config, gpu_list)
+    outputs = pool_out(parameters, config, gpu_list, args.result)
     for output in outputs:
         tmp_dict = {
             'id_': output[0],
@@ -61,5 +61,6 @@ if __name__ == "__main__":
         }
         out_line = json.dumps(tmp_dict, ensure_ascii=False) + '\n'
         out_file.write(out_line)
+    out_file.close()
 
     # train(parameters, config, gpu_list)

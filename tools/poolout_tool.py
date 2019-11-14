@@ -4,6 +4,7 @@ __author__ = 'yshao'
 
 import logging
 import torch
+import json
 
 from torch.autograd import Variable
 from timeit import default_timer as timer
@@ -35,7 +36,7 @@ def load_state_keywise(model, pretrained_dict):
     return model
 
 
-def pool_out(parameters, config, gpu_list):
+def pool_out(parameters, config, gpu_list, _outname):
     model = parameters["model"]
     dataset = parameters["test_dataset"]
     model.eval()
@@ -48,6 +49,7 @@ def pool_out(parameters, config, gpu_list):
     output_info = "Pool_Out"
 
     output_time = config.getint("output", "output_time")
+    save_step = config.getint("output", "save_step")
     step = -1
     result = []
 
@@ -69,6 +71,17 @@ def pool_out(parameters, config, gpu_list):
             output_value(0, "poolout", "%d/%d" % (step + 1, total_len), "%s/%s" % (
                 gen_time_str(delta_t), gen_time_str(delta_t * (total_len - step - 1) / (step + 1))),
                          "%.3lf" % (total_loss / (step + 1)), output_info, '\r', config)
+
+        if save_step > 0 and step % save_step == 0:
+            out_file = open(_outname, 'w', encoding='utf-8')
+            for item in results:
+                tmp_dict = {
+                    'id_': item[0],
+                    'res': item[1]
+                }
+                out_line = json.dumps(tmp_dict, ensure_ascii=False) + '\n'
+                out_file.write(out_line)
+            out_file.close()
 
     if step == -1:
         logger.error("There is no data given to the model in this epoch, check your data.")
