@@ -51,33 +51,33 @@ class AttentionRNN(nn.Module):
             if config.get('model', 'rnn') == 'lstm':
                 self.hidden = (
                     torch.autograd.Variable(
-                        torch.zeros(2, config.getint("train", "batch_size"),
-                                self.hidden_dim).cuda()),
+                        torch.zeros((2, config.getint("train", "batch_size"),
+                                self.hidden_dim), dtype=torch.float64).cuda()),
                     torch.autograd.Variable(
-                        torch.zeros(2, config.getint("train", "batch_size"),
-                                    self.hidden_dim).cuda())
+                        torch.zeros((2, config.getint("train", "batch_size"),
+                                    self.hidden_dim), dtype=torch.float64).cuda())
                 )
             else:
                 self.hidden = (
                     torch.autograd.Variable(
-                        torch.zeros(2, config.getint("train", "batch_size"),
-                                    self.hidden_dim).cuda())
+                        torch.zeros((2, config.getint("train", "batch_size"),
+                                    self.hidden_dim), dtype=torch.float64).cuda())
                 )
         else:
             if config.get('model', 'rnn') == 'lstm':
                 self.hidden = (
                     torch.autograd.Variable(
-                        torch.zeros(2, config.getint("train", "batch_size"),
-                                self.hidden_dim)),
+                        torch.zeros((2, config.getint("train", "batch_size"),
+                                self.hidden_dim), dtype=torch.float64)),
                     torch.autograd.Variable(
-                        torch.zeros(2, config.getint("train", "batch_size"),
-                                    self.hidden_dim))
+                        torch.zeros((2, config.getint("train", "batch_size"),
+                                    self.hidden_dim), dtype=torch.float64))
                 )
             else:
                 self.hidden = (
                     torch.autograd.Variable(
-                        torch.zeros(2, config.getint("train", "batch_size"),
-                                    self.hidden_dim))
+                        torch.zeros((2, config.getint("train", "batch_size"),
+                                    self.hidden_dim), dtype=torch.float64))
                 )
 
     def init_multi_gpu(self, device, config, *args, **params):
@@ -90,19 +90,29 @@ class AttentionRNN(nn.Module):
     def forward(self, data, config, gpu_list, acc_result, mode):
         x = data['input'] # B * M * I
         self.init_hidden(config, gpu_list) # 2 * B * H
-        rnn_out, self.hidden = self.rnn(x, self.hidden) # rnn_out: B * M * 2H, hidden: 2 * B * H
+        print('before input, input size, hidden size', x.size(), self.hidden.size())
+        input('continue input RNN?')
 
+        rnn_out, self.hidden = self.rnn(x, self.hidden) # rnn_out: B * M * 2H, hidden: 2 * B * H
+        print('after rnn, out size', rnn_out.size())
+        input('continue to maxpool?')
         tmp_rnn = rnn_out.permute(0, 2, 1) # B * 2H * M
 
         feature = self.max_pool(tmp_rnn) # B * 2H * 1
+        print('after maxpool, feature size', feature.size())
+        input('continue to attention? ')
         feature = feature.squeeze(2) # B * 2H
         feature = self.fc_a(feature) # B * 2H
         feature = feature.unsqueeze(2) # B * 2H * 1
 
+        print('before attention, feature size & hidden size', feature.size(), rnn_out.size())
+        input('continue to attention? ')
         atten_out = self.attention(feature, rnn_out) # B * (2H)
-
+        print('after attention, outsize', atten_out.size())
+        input('continue to classfier layer?')
         y = self.fc_f(atten_out)
         y = y.view(y.size()[0], -1)
+        print('final size', y.size())
 
         if 'label' in data.keys():
             label = data['label']
