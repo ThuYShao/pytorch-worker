@@ -46,37 +46,37 @@ class AttentionRNN(nn.Module):
         self.criterion = nn.CrossEntropyLoss()
         self.accuracy_function = init_accuracy_function(config, *args, **params)
 
-    def init_hidden(self, config, gpu_list):
+    def init_hidden(self, config, batch_size, gpu_list):
         if torch.cuda.is_available() and len(gpu_list) > 0:
             if config.get('model', 'rnn') == 'lstm':
                 self.hidden = (
                     torch.autograd.Variable(
-                        torch.zeros((2, config.getint("train", "batch_size"),
+                        torch.zeros((2, batch_size,
                                 self.hidden_dim)).cuda()),
                     torch.autograd.Variable(
-                        torch.zeros((2, config.getint("train", "batch_size"),
+                        torch.zeros((2, batch_size,
                                     self.hidden_dim)).cuda())
                 )
             else:
                 self.hidden = (
                     torch.autograd.Variable(
-                        torch.zeros((2, config.getint("train", "batch_size"),
+                        torch.zeros((2, batch_size,
                                     self.hidden_dim)).cuda())
                 )
         else:
             if config.get('model', 'rnn') == 'lstm':
                 self.hidden = (
                     torch.autograd.Variable(
-                        torch.zeros((2, config.getint("train", "batch_size"),
+                        torch.zeros((2, batch_size,
                                 self.hidden_dim))),
                     torch.autograd.Variable(
-                        torch.zeros((2, config.getint("train", "batch_size"),
+                        torch.zeros((2, batch_size,
                                     self.hidden_dim)))
                 )
             else:
                 self.hidden = (
                     torch.autograd.Variable(
-                        torch.zeros((2, config.getint("train", "batch_size"),
+                        torch.zeros((2, batch_size,
                                     self.hidden_dim)))
                 )
 
@@ -89,7 +89,8 @@ class AttentionRNN(nn.Module):
 
     def forward(self, data, config, gpu_list, acc_result, mode):
         x = data['input'] # B * M * I
-        self.init_hidden(config, gpu_list) # 2 * B * H
+        batch_size = x.size()[0]
+        self.init_hidden(config, batch_size, gpu_list) # 2 * B * H
         # print('before input, input size, hidden size', x.size(), x.dtype, self.hidden[0].size(), self.hidden[0].dtype, self.hidden[1].size(), self.hidden[1].dtype)
         # input('continue input RNN?')
 
