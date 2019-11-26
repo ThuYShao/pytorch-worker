@@ -31,19 +31,29 @@ class AttentionRNN(nn.Module):
 
         self.input_dim = 768
         self.hidden_dim = config.getint('model', 'hidden_dim')
+        self.dropout_rnn = config.getfloat('model', 'dropout_rnn', 0)
+        self.dropout_fc = config.getfloat('model', 'dropout_fc', 0)
+        self.bidirectional = config.getboolean('model', 'bidirectional', True)
+        if self.bidirectional:
+            self.direction = 2
+        else:
+            self.direction = 1
+        self.num_layers = config.getint("model", 'num_layers', 1)
         self.output_dim = config.getint("model", "output_dim")
         self.max_para_q = config.getint('model', 'max_para_q')
-        # self.label_weight = config.getfloat('model', 'label_weight')
 
         if config.get('model', 'rnn') == 'lstm':
-            self.rnn = nn.LSTM(self.input_dim, self.hidden_dim, batch_first=True, num_layers=1, bidirectional=True)
+            self.rnn = nn.LSTM(self.input_dim, self.hidden_dim, batch_first=True, num_layers=self.num_layers,
+                               bidirectional=self.bidirectional, dropout=self.dropout_rnn)
         else:
-            self.rnn = nn.GRU(self.input_dim, self.hidden_dim, batch_first=True, num_layers=1, bidirectional=True)
+            self.rnn = nn.GRU(self.input_dim, self.hidden_dim, batch_first=True, num_layers=self.num_layers,
+                              bidirectional=self.bidirectional, dropout=self.dropout_rnn)
 
         self.max_pool = nn.MaxPool1d(kernel_size=self.max_para_q)
-        self.fc_a = nn.Linear(self.hidden_dim*2, self.hidden_dim*2)
+        self.fc_a = nn.Linear(self.hidden_dim*self.direction, self.hidden_dim*self.direction)
         self.attention = Attention(config)
-        self.fc_f = nn.Linear(self.hidden_dim*2, self.output_dim)
+        self.fc_f = nn.Linear(self.hidden_dim*self.direction, self.output_dim)
+        self.dropout = nn.Dropout(self.dropout_fc)
         self.weight = self.init_weight(config, gpu_list)
         self.criterion = nn.CrossEntropyLoss(weight=self.weight)
         self.accuracy_function = init_accuracy_function(config, *args, **params)
@@ -64,32 +74,32 @@ class AttentionRNN(nn.Module):
             if config.get('model', 'rnn') == 'lstm':
                 self.hidden = (
                     torch.autograd.Variable(
-                        torch.zeros((2, batch_size,
+                        torch.zeros((self.direction * self.num_layers, batch_size,
                                 self.hidden_dim)).cuda()),
                     torch.autograd.Variable(
-                        torch.zeros((2, batch_size,
+                        torch.zeros((self.direction * self.num_layers, batch_size,
                                     self.hidden_dim)).cuda())
                 )
             else:
                 self.hidden = (
                     torch.autograd.Variable(
-                        torch.zeros((2, batch_size,
+                        torch.zeros((self.direction * self.num_layers, batch_size,
                                     self.hidden_dim)).cuda())
                 )
         else:
             if config.get('model', 'rnn') == 'lstm':
                 self.hidden = (
                     torch.autograd.Variable(
-                        torch.zeros((2, batch_size,
+                        torch.zeros((self.direction * self.num_layers, batch_size,
                                 self.hidden_dim))),
                     torch.autograd.Variable(
-                        torch.zeros((2, batch_size,
+                        torch.zeros((self.direction * self.num_layers, batch_size,
                                     self.hidden_dim)))
                 )
             else:
                 self.hidden = (
                     torch.autograd.Variable(
-                        torch.zeros((2, batch_size,
+                        torch.zeros((self.direction * self.num_layers, batch_size,
                                     self.hidden_dim)))
                 )
 
@@ -114,6 +124,7 @@ class AttentionRNN(nn.Module):
         feature = feature.unsqueeze(2) # B * 2H * 1
 
         atten_out = self.attention(feature, rnn_out) # B * (2H)
+        atten_out = self.dropout(atten_out)
         y = self.fc_f(atten_out)
         y = y.view(y.size()[0], -1)
 
