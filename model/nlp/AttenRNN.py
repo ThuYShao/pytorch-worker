@@ -91,34 +91,29 @@ class AttentionRNN(nn.Module):
         x = data['input'] # B * M * I
         batch_size = x.size()[0]
         self.init_hidden(config, batch_size, gpu_list) # 2 * B * H
-        # print('before input, input size, hidden size', x.size(), x.dtype, self.hidden[0].size(), self.hidden[0].dtype, self.hidden[1].size(), self.hidden[1].dtype)
-        # input('continue input RNN?')
 
         rnn_out, self.hidden = self.rnn(x, self.hidden) # rnn_out: B * M * 2H, hidden: 2 * B * H
-        # print('after rnn, out size', rnn_out.size())
-        # input('continue to maxpool?')
         tmp_rnn = rnn_out.permute(0, 2, 1) # B * 2H * M
 
         feature = self.max_pool(tmp_rnn) # B * 2H * 1
-        # print('after maxpool, feature size', feature.size())
-        # input('continue to attention? ')
         feature = feature.squeeze(2) # B * 2H
         feature = self.fc_a(feature) # B * 2H
         feature = feature.unsqueeze(2) # B * 2H * 1
 
-        # print('before attention, feature size & hidden size', feature.size(), rnn_out.size())
-        # input('continue to attention? ')
         atten_out = self.attention(feature, rnn_out) # B * (2H)
-        # print('after attention, outsize', atten_out.size())
-        # input('continue to classfier layer?')
         y = self.fc_f(atten_out)
         y = y.view(y.size()[0], -1)
-        # print('final size', y.size())
 
         if 'label' in data.keys():
             label = data['label']
             loss = self.criterion(y, label.view(-1))
             acc_result = self.accuracy_function(y, label, config, acc_result)
+            if mode == 'valid':
+                output = []
+                y = y.cpu().detach().numpy().tolist()
+                for i, guid in enumerate(data['guid']):
+                    output.append([guid, label[i], y[i]])
+                return {"loss": loss, "acc_result": acc_result, "output": output}
             return {"loss": loss, "acc_result": acc_result}
         else:
             output = []
