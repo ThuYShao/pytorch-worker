@@ -33,6 +33,7 @@ class AttentionRNN(nn.Module):
         self.hidden_dim = config.getint('model', 'hidden_dim')
         self.output_dim = config.getint("model", "output_dim")
         self.max_para_q = config.getint('model', 'max_para_q')
+        # self.label_weight = config.getfloat('model', 'label_weight')
 
         if config.get('model', 'rnn') == 'lstm':
             self.rnn = nn.LSTM(self.input_dim, self.hidden_dim, batch_first=True, num_layers=1, bidirectional=True)
@@ -43,8 +44,20 @@ class AttentionRNN(nn.Module):
         self.fc_a = nn.Linear(self.hidden_dim*2, self.hidden_dim*2)
         self.attention = Attention(config)
         self.fc_f = nn.Linear(self.hidden_dim*2, self.output_dim)
-        self.criterion = nn.CrossEntropyLoss()
+        self.weight = self.init_weight(config, gpu_list)
+        self.criterion = nn.CrossEntropyLoss(weight=self.weight)
         self.accuracy_function = init_accuracy_function(config, *args, **params)
+
+    def init_weight(self, config, gpu_list):
+        try:
+            label_weight = config.getfloat('model', 'label_weight')
+        except Exception:
+            return None
+        weight_lst = torch.ones(self.output_dim)
+        weight_lst[-1] = label_weight
+        if torch.cuda.is_available() and len(gpu_list) > 0:
+            weight_lst = weight_lst.cuda()
+        return weight_lst
 
     def init_hidden(self, config, batch_size, gpu_list):
         if torch.cuda.is_available() and len(gpu_list) > 0:
