@@ -31,14 +31,14 @@ class AttentionRNN(nn.Module):
 
         self.input_dim = 768
         self.hidden_dim = config.getint('model', 'hidden_dim')
-        self.dropout_rnn = config.getfloat('model', 'dropout_rnn', 0)
-        self.dropout_fc = config.getfloat('model', 'dropout_fc', 0)
-        self.bidirectional = config.getboolean('model', 'bidirectional', True)
+        self.dropout_rnn = config.getfloat('model', 'dropout_rnn')
+        self.dropout_fc = config.getfloat('model', 'dropout_fc')
+        self.bidirectional = config.getboolean('model', 'bidirectional')
         if self.bidirectional:
             self.direction = 2
         else:
             self.direction = 1
-        self.num_layers = config.getint("model", 'num_layers', 1)
+        self.num_layers = config.getint("model", 'num_layers')
         self.output_dim = config.getint("model", "output_dim")
         self.max_para_q = config.getint('model', 'max_para_q')
 
