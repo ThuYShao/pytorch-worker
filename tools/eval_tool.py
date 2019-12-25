@@ -71,9 +71,12 @@ def eval_micro_query(_result_list):
                 predict += 1
                 if cid in label_dict[qid]:
                     correct += 1
-
-    micro_prec_query = float(correct) / predict
-    micro_recall_query = float(correct) / label
+    if correct == 0:
+        micro_prec_query = 0
+        micro_recall_query = 0
+    else:
+        micro_prec_query = float(correct) / predict
+        micro_recall_query = float(correct) / label
     if micro_prec_query > 0 or micro_recall_query > 0:
         micro_f1_query = (2 * micro_prec_query * micro_recall_query) / (micro_prec_query + micro_recall_query)
     else:
