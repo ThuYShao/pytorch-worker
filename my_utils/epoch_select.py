@@ -6,7 +6,7 @@ import os
 import json
 import numpy as np
 
-OUTPUT_DIR = 'output/model'
+OUTPUT_DIR = '/data/disk2/private/guozhipeng/syq/coliee/pytorch-worker/output/model'
 
 
 def load_json(_filename):
@@ -21,7 +21,40 @@ def select_best_epoch(_eval_dict, _key):
     for type_ in _eval_dict:
         tmp_dict = _eval_dict[type_]
         sort_lst = sorted(tmp_dict.items(), key=lambda item: item[1][_key], reverse=True)
-        print('type=%s, epoch=%d' % (type_, sort_lst[0][0]), sort_lst[0][1])
+        print('type=%s, epoch=%d' % (type_, int(sort_lst[0][0])), sort_lst[0][1])
+
+
+def early_stop(_eval_dict, _key, _th=10):
+    print('early stop epoch, key=%s' % _key)
+    if 'dev' not in _eval_dict:
+        print('no dev set')
+        return
+    tmp_dict = _eval_dict['dev']
+    sort_lst = sorted(tmp_dict.items(), key=lambda item: int(item[0]), reverse=False)
+    if _key != 'loss':
+        tmp_best = -1
+        best_epoch = -1
+        for item in sort_lst:
+            epoch_idx = int(item[0])
+            score = item[1][_key]
+            if score > tmp_best:
+                tmp_best = score
+                best_epoch = epoch_idx
+            if epoch_idx - best_epoch > _th:
+                break
+        print('epoch=%d, best_score=%f' % (best_epoch, tmp_best))
+    else:
+        tmp_best = 1000
+        best_epoch = -1
+        for item in sort_lst:
+            epoch_idx = int(item[0])
+            score = item[1][_key]
+            if score < tmp_best:
+                tmp_best = score
+                best_epoch = epoch_idx
+            if epoch_idx - best_epoch > _th:
+                break
+        print('epoch=%d, best_score=%f' % (best_epoch, tmp_best))
 
 
 if __name__ == '__main__':
@@ -29,4 +62,6 @@ if __name__ == '__main__':
     file_name = os.path.join(OUTPUT_DIR, model_path, 'eval.json')
     eval_dict = load_json(file_name)
 
+    '''select epoch'''
     select_best_epoch(eval_dict, 'f1')
+    early_stop(eval_dict, 'f1', _th=10)
