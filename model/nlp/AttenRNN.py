@@ -138,6 +138,12 @@ class AttentionRNN(nn.Module):
                 for i, guid in enumerate(data['guid']):
                     output.append([guid, label[i], y[i]])
                 return {"loss": loss, "acc_result": acc_result, "output": output}
+            elif mode == 'test_real':
+                output = []
+                y = y.cpu().detach().numpy().tolist()
+                for i, guid in enumerate(data['guid']):
+                    output.append([guid, y[i]])
+                return {"output": output}
             return {"loss": loss, "acc_result": acc_result}
         else:
             output = []
