@@ -142,3 +142,4 @@ def valid(model, dataset, epoch, writer, config, gpu_list, output_function, mode
           (micro_prec_query, micro_recall_query, micro_f1_query))
 
     model.train()
+    return {'precision': micro_prec_query, 'recall': micro_recall_query, 'f1': micro_f1_query}

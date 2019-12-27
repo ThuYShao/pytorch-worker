@@ -6,6 +6,8 @@ from torch.optim import lr_scheduler
 from tensorboardX import SummaryWriter
 import shutil
 from timeit import default_timer as timer
+from collections import defaultdict
+import json
 
 from tools.eval_tool import valid, gen_time_str, output_value
 from tools.init_tool import init_test_dataset, init_formatter
@@ -29,7 +31,7 @@ def checkpoint(filename, model, optimizer, trained_epoch, config, global_step):
         logger.warning("Cannot save models with error %s, continue anyway" % str(e))
 
 
-def train(parameters, config, gpu_list, do_test=False):
+def train(parameters, config, gpu_list, do_test=False, save_eval=False):
     epoch = config.getint("train", "epoch")
     batch_size = config.getint("train", "batch_size")
 
@@ -51,6 +53,9 @@ def train(parameters, config, gpu_list, do_test=False):
     if do_test:
         init_formatter(config, ["test"])
         test_dataset = init_test_dataset(config)
+
+    if save_eval:
+        eval_dict = defaultdict(lambda: defaultdict())
 
     if trained_epoch == 0:
         shutil.rmtree(
@@ -131,6 +136,18 @@ def train(parameters, config, gpu_list, do_test=False):
 
         if current_epoch % test_time == 0:
             with torch.no_grad():
-                valid(model, parameters["valid_dataset"], current_epoch, writer, config, gpu_list, output_function)
+                eval_res = valid(model, parameters["valid_dataset"], current_epoch, writer, config, gpu_list,
+                                 output_function)
+                if save_eval:
+                    eval_dict['dev'][current_epoch] = eval_res
                 if do_test:
-                    valid(model, test_dataset, current_epoch, writer, config, gpu_list, output_function, mode="test")
+                    eval_res = valid(model, test_dataset, current_epoch, writer, config, gpu_list, output_function, mode="test")
+                    if save_eval:
+                        eval_dict['test'][current_epoch] = eval_res
+    if save_eval:
+        save_file = os.path.join(output_path, 'eval.json')
+        json_str = json.dumps(eval_dict, ensure_ascii=False)
+        fout = open(save_file, 'w', encoding='utf-8')
+        fout.write(json_str + '\n')
+        fout.close()
+        print('save eval res in file=%s' % save_file)

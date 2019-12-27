@@ -19,6 +19,7 @@ if __name__ == "__main__":
     parser.add_argument('--gpu', '-g', help="gpu id list")
     parser.add_argument('--checkpoint', help="checkpoint file path")
     parser.add_argument('--do_test', help="do test while training or not", action="store_true")
+    parser.add_argument('--save_eval', help="save eval result while training or not", action="store_true")
     args = parser.parse_args()
 
     configFilePath = args.config
@@ -50,4 +51,8 @@ if __name__ == "__main__":
     if args.do_test:
         do_test = True
 
-    train(parameters, config, gpu_list, do_test)
+    save_eval = False
+    if args.save_eval:
+        save_eval = True
+
+    train(parameters, config, gpu_list, do_test, save_eval)
