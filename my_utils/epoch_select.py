@@ -42,7 +42,7 @@ def early_stop(_eval_dict, _key, _th=10):
                 best_epoch = epoch_idx
             if epoch_idx - best_epoch > _th:
                 break
-        print('epoch=%d, best_score=%f' % (best_epoch, tmp_best))
+        print('epoch=%d, best_score=%f' % (best_epoch, tmp_best), sort_lst[best_epoch])
     else:
         tmp_best = 1000
         best_epoch = -1
@@ -54,7 +54,7 @@ def early_stop(_eval_dict, _key, _th=10):
                 best_epoch = epoch_idx
             if epoch_idx - best_epoch > _th:
                 break
-        print('epoch=%d, best_score=%f' % (best_epoch, tmp_best))
+        print('epoch=%d, best_score=%f' % (best_epoch, tmp_best), sort_lst[best_epoch])
 
 
 if __name__ == '__main__':
@@ -65,3 +65,4 @@ if __name__ == '__main__':
     '''select epoch'''
     select_best_epoch(eval_dict, 'f1')
     early_stop(eval_dict, 'f1', _th=10)
+    early_stop(eval_dict, 'loss', _th=10)
