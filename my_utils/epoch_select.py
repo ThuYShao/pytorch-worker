@@ -68,11 +68,11 @@ def early_stop(_eval_dict, _key, _th=10):
 
 
 if __name__ == '__main__':
-    model_path = 'attengru_bm25_tmp'
+    model_path = 'main/attenlstm_bm25_1e4_decay_5'
     file_name = os.path.join(OUTPUT_DIR, model_path, 'eval.json')
     eval_dict = load_json(file_name)
 
     '''select epoch'''
     select_best_epoch(eval_dict, 'f1')
-    early_stop(eval_dict, 'f1', _th=10)
-    early_stop(eval_dict, 'loss', _th=10)
+    # early_stop(eval_dict, 'f1', _th=10)
+    # early_stop(eval_dict, 'loss', _th=10)
