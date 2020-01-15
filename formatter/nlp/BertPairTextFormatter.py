@@ -24,8 +24,8 @@ class BertPairTextFormatter(BasicFormatter):
         input_ids = []
         attention_mask = []
         token_type_ids = []
-        if mode != 'test':
-            labels = []
+        # if mode != 'test':
+        labels = []
 
         for temp in data:
             res_dict = example_item_to_feature(temp, self.max_len, self.tokenizer, self.output_mode,
@@ -36,20 +36,20 @@ class BertPairTextFormatter(BasicFormatter):
             token_type_ids.append(res_dict['segment_ids'])
             guids.append(temp['guid'])
 
-            if mode != 'test':
-                labels.append(res_dict['label_id'])
+            # if mode != 'test':
+            labels.append(res_dict['label_id'])
 
         input_ids = torch.LongTensor(input_ids)
         attention_mask = torch.LongTensor(attention_mask)
         token_type_ids = torch.LongTensor(token_type_ids)
-        if mode != 'test':
-            labels = torch.LongTensor(labels)
+        # if mode != 'test':
+        labels = torch.LongTensor(labels)
 
-        if mode != 'test':
-            return {'guid': guids, 'input_ids': input_ids, 'attention_mask': attention_mask, 'token_type_ids': token_type_ids,
-                    'label': labels}
-        else:
-            return {'guid': guids, 'input_ids': input_ids, 'attention_mask': attention_mask, 'token_type_ids': token_type_ids}
+        # if mode != 'test':
+        return {'guid': guids, 'input_ids': input_ids, 'attention_mask': attention_mask, 'token_type_ids': token_type_ids,
+                'label': labels}
+        # else:
+        #     return {'guid': guids, 'input_ids': input_ids, 'attention_mask': attention_mask, 'token_type_ids': token_type_ids}
 
 
 
